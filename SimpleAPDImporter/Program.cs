@@ -28,54 +28,60 @@ namespace SimpleAPDImporter
             StreamReader reader = new FileInfo(filename).OpenText();
             string line;
             Excel.Application application = new Excel.Application();
-            application.Visible = true;
-            Excel.Workbook newWorkbook = application.Workbooks.Add();
-            Excel.Worksheet sheet = null;
-            int i = 0;
-            string chapterName = null;
-            string escapedChapterName = null;
-            while ((line = reader.ReadLine()) != null)
+            try
             {
-                if (newChapter.IsMatch(line))
+                application.Visible = true;
+                application.ScreenUpdating = false;
+                Excel.Workbook newWorkbook = application.Workbooks.Add();
+                Excel.Worksheet sheet = null;
+                int i = 1;
+                string chapterName = null;
+                string escapedChapterName = null;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    if ((chapterName == null) || !chapterName.Equals(line))
+                    if (newChapter.IsMatch(line))
                     {
-                        chapterName = line;
-                        sheet = newWorkbook.Worksheets.Add();
-                        escapedChapterName = escape(chapterName);
-                        sheet.Name = escapedChapterName;
-                        sheet.Activate();
-
-                    }
-                }
-                else
-                {
-                    if ((chapterName!=null) && (line.StartsWith(chapterName)))
-                    {
-                        // total check value
-
+                        if ((chapterName == null) || !chapterName.Equals(line))
+                        {
+                            chapterName = line;
+                            sheet = newWorkbook.Worksheets.Add();
+                            escapedChapterName = escape(chapterName);
+                            sheet.Name = escapedChapterName;
+                            i = 1;
+                        }
                     }
                     else
                     {
-
-                        Match match = parts.Match(line);
-                        if (match.Success)
+                        if ((chapterName != null) && (line.StartsWith(chapterName)))
                         {
-                            Console.Out.WriteLine(sheet.Name);
-                            string[] header = splitter.Split(line, 3);
-                            
-                            sheet.Cells[1][i + 1].Value = header[0].Trim();
-                            sheet.Cells[2][i + 1].Value = header[1].Trim();
+                            // total check value
 
-                            string[] values = header[2].Split(new char[]{ ' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-                            for (int j = 0; j < values.Length; j++)
+                        }
+                        else
+                        {
+
+                            Match match = parts.Match(line);
+                            if (match.Success)
                             {
-                                sheet.Cells[j + 3][i + 1] = values[j].Trim();
+                                string[] header = splitter.Split(line, 3);
+
+                                sheet.Cells[1][i].Value2 = header[0].Trim();
+                                sheet.Cells[2][i].Value2 = header[1].Trim();
+
+                                string[] values = header[2].Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                                Excel.Range range = sheet.Range[sheet.Cells[3][i], sheet.Cells[3 + values.Length - 1][i]];
+                                range.NumberFormat = "0.00";
+                                range.Value = values;
+                                i++;
                             }
-                            i++;
                         }
                     }
                 }
+            }
+            finally
+            {
+                application.ScreenUpdating = true;
+                application.Calculate();
             }
         }
 
