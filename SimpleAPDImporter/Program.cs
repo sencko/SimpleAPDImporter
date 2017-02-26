@@ -17,11 +17,11 @@ namespace SimpleAPDImporter
             program.readAPD();
           Console.In.ReadLine();
         }
-        Regex parts = new Regex(@"^\s\d+(\.\w+)?\s{2,}((\S+\s)*)\s{2,}(((\-?\d*\.\d+)\s*)|(\*{2,}\s*))+");
+        Regex parts = new Regex(@"^\s\d+(\.\w+)?\s{2,}((\S+\s)*)\s{2,}(((\-?\d*\.\d+)\s*)|(\*{2,}\s*))+$");
         Regex splitter = new Regex(@"\s{2,}");
         Regex newChapter = new Regex(@"^\s{2,}((?:\d+)(?:\.\w+)?)\s((?:\S+\s)*(?:\S)+)$");
         Regex title = new Regex(@"^\s+YTD.+$");
-        void readAPD(string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt")
+        void readAPD(string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt" , string from = null, string to = null)
         {
             //^\s\d+(\.\w+)?\s{2,}((\S+\s)*)\s{2,}(((\-?\d*\.\d+)\s*)|(\*{2,}\s*))+$
 
@@ -41,23 +41,36 @@ namespace SimpleAPDImporter
                 string chapterName = null;
                 string escapedChapterName = null;
                 string[] titleString = null;
+                int fromIndex = 0, toIndex = 0;
                 while ((line = reader.ReadLine()) != null)
                 {
 
                     if (title.IsMatch(line))
                     {
                         titleString = line.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        toIndex = titleString.Length - 1;
+                        if (from != null)
+                        {
+                            fromIndex = Array.IndexOf(titleString, from);
+                        }
+                        if (to != null)
+                        {
+                            toIndex = Array.IndexOf(titleString, to);
+                        }
                     } else
                     if (newChapter.IsMatch(line))
                     {
-                        StartNewSheet(line, newWorkbook, ref sheet, ref i, ref chapterName, ref escapedChapterName, titleString);
+                        StartNewSheet(line, newWorkbook, ref sheet, ref i, ref chapterName, ref escapedChapterName, titleString, fromIndex, toIndex);
                     }
                     else
                     {
                         if ((chapterName != null) && (line.StartsWith(chapterName)))
                         {
-                            // total check value
-
+                           // sheet.Cells[2][i].Value2 = "Total Calculated";
+                           // sheet.Cells[3][i].F
+                            i++;
+                            sheet.Cells[2][i].Value2 = "Total";
+                            SetValues(sheet, i, line.Substring(chapterName.Length), fromIndex, toIndex);
                         }
                         else
                         {
@@ -65,7 +78,7 @@ namespace SimpleAPDImporter
                             Match match = parts.Match(line);
                             if (match.Success)
                             {
-                                HandleLine(line, sheet, ref i);
+                                HandleLine(line, sheet, ref i, fromIndex, toIndex);
                             }
                         }
                     }
@@ -81,21 +94,26 @@ namespace SimpleAPDImporter
             }
         }
         
-        private void HandleLine( string line, Excel.Worksheet sheet, ref int i)
+        private void HandleLine( string line, Excel.Worksheet sheet, ref int i, int fromIndex, int toIndex)
         {
             string[] header = splitter.Split(line, 3);
 
             sheet.Cells[1][i].Value2 = header[0].Trim();
             sheet.Cells[2][i].Value2 = header[1].Trim();
 
-            double[] values = header[2].Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).Select<string, double>(x => ((x.Contains('*')) ? (0) : Double.Parse(x))).ToArray<double>();
-            Excel.Range range = sheet.Range[sheet.Cells[3][i], sheet.Cells[3 + values.Length - 1][i]];
-            range.NumberFormat = "0.00";
-            range.Value = values;
+            SetValues(sheet, i, header[2], fromIndex, toIndex);
             i++;
         }
 
-        private void StartNewSheet(string line, Excel.Workbook newWorkbook, ref Excel.Worksheet sheet, ref int i, ref string chapterName, ref string escapedChapterName, string[] titleString)
+        private static void SetValues(Excel.Worksheet sheet, int i, string intValues, int fromIndex, int toIndex)
+        {
+            double[] values = intValues.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).Select(x => ((x.Contains('*')) ? (0) : Double.Parse(x))).ToArray();
+            Excel.Range range = sheet.Range[sheet.Cells[3][i], sheet.Cells[3 + values.Length - 1][i]];
+            range.NumberFormat = "0.00";
+            range.Value = values;
+        }
+
+        private void StartNewSheet(string line, Excel.Workbook newWorkbook, ref Excel.Worksheet sheet, ref int i, ref string chapterName, ref string escapedChapterName, string[] titleString, int fromIndex, int toIndex)
         {
             if ((chapterName == null) || !chapterName.Equals(line))
             {
@@ -107,7 +125,7 @@ namespace SimpleAPDImporter
                 sheet.Name = escapedChapterName;
                 sheet.Range["A:A"].NumberFormat = "@";
                 sheet.Range["B:B"].NumberFormat = "@";
-                sheet.Cells[1, 1].Value2 = chapterName;
+                sheet.Cells[1, 1].Value2 = chapterName.Trim();
                 sheet.Range[sheet.Cells[1][1], sheet.Cells[2][1]].Merge();
                 sheet.Range[sheet.Cells[3][1], sheet.Cells[3 + titleString.Length - 1][1]].Value2 = titleString;
 
