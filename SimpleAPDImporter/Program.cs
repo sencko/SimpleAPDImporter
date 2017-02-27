@@ -66,11 +66,15 @@ namespace SimpleAPDImporter
                     {
                         if ((chapterName != null) && (line.StartsWith(chapterName)))
                         {
-                           // sheet.Cells[2][i].Value2 = "Total Calculated";
-                           // sheet.Cells[3][i].F
+                            sheet.Cells[2][i].Value2 = "Total Calculated";
+                            Excel.Range range = sheet.Range[sheet.Cells[3][i], sheet.Cells[3 + titleString.Length - 1][i]];
+                            range.NumberFormat = "0.00";
+                            sheet.Cells[3][i].FormulaR1C1 = "=SUM(R3C:R[-1]C)";
+                            range.FillRight();
                             i++;
                             sheet.Cells[2][i].Value2 = "Total";
                             SetValues(sheet, i, line.Substring(chapterName.Length), fromIndex, toIndex);
+
                         }
                         else
                         {
