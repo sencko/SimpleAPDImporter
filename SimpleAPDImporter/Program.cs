@@ -14,8 +14,24 @@ namespace SimpleAPDImporter
         static void Main(string[] args)
         {
             Program program = new Program();
-            program.readAPD();
-          Console.In.ReadLine();
+            Console.Out.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt";
+            string from = null;
+            string to = null;
+            if (args.Length > 0)
+            {
+                filename = args[0];
+            }
+            if (args.Length > 1)
+            {
+                from = args[1];
+            }
+            if (args.Length > 2)
+            {
+                to = args[2];
+            }
+            program.readAPD(filename, from, to);
+       //   Console.In.ReadLine();
         }
         Regex parts = new Regex(@"^\s\d+(\.\w+)?\s{2,}((\S+\s)*)\s{2,}(((\-?\d*\.\d+)\s*)|(\*{2,}\s*))+$");
         Regex splitter = new Regex(@"\s{2,}");
