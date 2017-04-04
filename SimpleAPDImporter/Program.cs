@@ -22,13 +22,13 @@ namespace SimpleAPDImporter
       string from = null;
       string to = null;
       if(args.Length == 0) {
-                OpenFileDialog openFileDialog1 = new OpenFileDialog();
+        OpenFileDialog openFileDialog1 = new OpenFileDialog();
         openFileDialog1.Filter = "APD File|R*.txt";
         openFileDialog1.Title = "Select a APD File";
         openFileDialog1.RestoreDirectory = true;
         if(openFileDialog1.ShowDialog() == DialogResult.OK) {
           filename = openFileDialog1.FileName;
-         }
+        }
       } else {
         if(args.Length > 0) {
           filename = args[0];
