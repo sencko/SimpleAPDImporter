@@ -18,7 +18,7 @@ namespace SimpleAPDImporter
     {
       Program program = new Program();
       Console.Out.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().Location);
-      string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\R83410372073.txt";// "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt";
+      string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\R83410095985.txt";// "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt";
       string from = null;
       string to = null;
       if(args.Length == 0) {
