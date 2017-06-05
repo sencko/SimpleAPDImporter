@@ -7,6 +7,7 @@ using Excel = Microsoft.Office.Interop.Excel;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Globalization;
 
 namespace SimpleAPDImporter
 {
@@ -47,6 +48,9 @@ namespace SimpleAPDImporter
     Regex splitter = new Regex(@"\s{2,}");
     Regex newChapter = new Regex(@"^\s{2,}((?:\d+)(?:\.\w+)?)\s((?:\S+\s)*(?:\S)+)$");
     Regex title = new Regex(@"^\s+YTD.+$");
+
+    CultureInfo info = new CultureInfo("en-US");
+
     void readAPD(string filename = "C:\\Users\\i028512\\Documents\\Visual Studio 2017\\Projects\\SimpleAPDImporter\\r83410048802.txt", string from = null, string to = null)
     {
       //^\s\d+(\.\w+)?\s{2,}((\S+\s)*)\s{2,}(((\-?\d*\.\d+)\s*)|(\*{2,}\s*))+$
@@ -121,9 +125,9 @@ namespace SimpleAPDImporter
       i++;
     }
 
-    private static void SetValues(Excel.Worksheet sheet, int i, string intValues, int fromIndex, int toIndex)
+    private void SetValues(Excel.Worksheet sheet, int i, string intValues, int fromIndex, int toIndex)
     {
-      double[] values = intValues.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).Select(x => ((x.Contains('*')) ? (0) : Double.Parse(x))).ToArray();
+      double[] values = intValues.Trim().Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries).Select(x => ((x.Contains('*')) ? (0) : Double.Parse(x, info.NumberFormat))).ToArray();
       Excel.Range range = sheet.Range[sheet.Cells[3][i], sheet.Cells[3 + values.Length - 1][i]];
       range.NumberFormat = "0.00";
       range.Value = values;
